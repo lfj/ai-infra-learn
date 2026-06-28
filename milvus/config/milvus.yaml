@@ -1,0 +1,26 @@
+# Optional Milvus configuration.
+# Default settings are baked into the official image and overridden by env vars
+# in docker-compose.yml. To customize, uncomment the volume mount in
+# docker-compose.yml for the standalone service:
+#
+#   - ./config/milvus.yaml:/milvus/configs/milvus.yaml
+
+etcd:
+  endpoints:
+    - etcd:2379
+
+minio:
+  address: minio
+  port: 9000
+  accessKeyID: minioadmin
+  secretAccessKey: minioadmin
+  useSSL: false
+  bucketName: milvus-bucket
+  rootPath: files
+
+log:
+  level: info
+
+metrics:
+  enabled: true
+  port: 9091
