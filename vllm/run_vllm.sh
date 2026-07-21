@@ -13,4 +13,5 @@ python -m vllm.entrypoints.openai.api_server \
 --enable-chunked-prefill \
 --max-num-seqs 64 \
 --max-num-batched-tokens 4096 \
---disable-log-requests
+--disable-log-requests \
+--load-format awq
