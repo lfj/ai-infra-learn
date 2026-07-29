@@ -1,25 +1,30 @@
 #!/bin/bash
 set -e
 
-# 1. 安装基础依赖
-apt update && apt install -y wget unzip systemd
+# 基础依赖
+apt update && apt install -y wget unzip apt-transport-https ca-certificates
 
-# ========== 安装 OpenTelemetry Collector Contrib ==========
 OTEL_VERSION="0.111.0"
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
+PROM_VER="2.54.1"
+
+# ========== 1、otelcol-contrib 【gh代理加速】 ==========
+echo "开始下载 otelcol-contrib..."
+wget https://shturl.cc//https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
 dpkg -i otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
 rm -f otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
 
-# ========== 安装 Prometheus ==========
-PROM_VER="2.54.1"
-wget https://github.com/prometheus/prometheus/releases/download/v${PROM_VER}/prometheus-${PROM_VER}.linux-amd64.tar.gz
+# ========== 2、Prometheus 【清华github-release镜像】 ==========
+echo "开始下载 prometheus..."
+wget https://mirrors.tuna.tsinghua.edu.cn/github-release/prometheus/prometheus/v${PROM_VER}/prometheus-${PROM_VER}.linux-amd64.tar.gz
 tar zxf prometheus-${PROM_VER}.linux-amd64.tar.gz
 mv prometheus-${PROM_VER}.linux-amd64 /opt/prometheus
 rm -rf prometheus-${PROM_VER}.linux-amd64.tar.gz
 
-# ========== 安装 Grafana ==========
-wget https://dl.grafana.com/oss/release/grafana_11.2.0_amd64.deb
-dpkg -i grafana_11.2.0_amd64.deb || apt -f install -y
-rm -f grafana_11.2.0_amd64.deb
+# ========== 3、Grafana 使用清华APT源，彻底抛弃github下载 ==========
+echo "配置Grafana清华源"
+wget -q -O- https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/gpg.key | gpg --dearmor -o /usr/share/keyrings/grafana.gpg
+echo "deb [signed-by=/usr/share/keyrings/grafana.gpg] https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/ stable main" | tee /etc/apt/sources.list.d/grafana.list
+apt update
+apt install -y grafana
 
-echo "==== 二进制安装完成，接下来写入配置 ===="
+echo "===== 安装完成，继续写入配置 ====="
