@@ -1,17 +1,41 @@
 #!/bin/bash
 set -e
 
+# 禁用失效的 docker-engine 源，避免 apt update 失败
+for f in /etc/apt/sources.list.d/*docker*; do
+  if [ -f "$f" ] && grep -q 'mirrors.aliyun.com/docker-engine' "$f" 2>/dev/null; then
+    mv "$f" "${f}.disabled"
+    echo "已禁用失效源: $f"
+  fi
+done
+
 # 基础依赖
 apt update && apt install -y wget unzip apt-transport-https ca-certificates
 
 OTEL_VERSION="0.111.0"
 PROM_VER="2.54.1"
 
-# ========== 1、otelcol-contrib 【gh代理加速】 ==========
+download_file() {
+  local output="$1"
+  shift
+  for url in "$@"; do
+    echo "尝试下载: $url"
+    if wget -O "$output" "$url"; then
+      return 0
+    fi
+  done
+  echo "下载失败: $output" >&2
+  return 1
+}
+
+# ========== 1、otelcol-contrib ==========
 echo "开始下载 otelcol-contrib..."
-wget https://shturl.cc//https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
-dpkg -i otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
-rm -f otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
+OTEL_DEB="otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb"
+download_file "$OTEL_DEB" \
+  "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/${OTEL_DEB}" \
+  "https://ghfast.top/https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/${OTEL_DEB}"
+dpkg -i "$OTEL_DEB"
+rm -f "$OTEL_DEB"
 
 # ========== 2、Prometheus 【清华github-release镜像】 ==========
 echo "开始下载 prometheus..."
