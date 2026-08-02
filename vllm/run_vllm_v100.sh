@@ -14,6 +14,6 @@ python -m vllm.entrypoints.openai.api_server \
 --port 6006 \
 --max-model-len 4096 \
 #--otlp-traces-endpoint=http://127.0.0.1:4317 \
---collect-detailed-traces all \
+#--collect-detailed-traces all \
 --gpu-memory-utilization 0.85 \
 --trust-remote-code
