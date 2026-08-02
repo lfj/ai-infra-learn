@@ -5,3 +5,5 @@ ssh -R 4320:127.0.0.1:4317 root@connect.nmb1.seetacloud.com -p 27592
 nc -zv 127.0.0.1 4320
 
 nohup ./bin/otelcol-contrib --config config/collector.yaml > collector.log 2>&1 &
+
+
