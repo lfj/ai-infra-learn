@@ -1,0 +1,40 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: "vllm-server"
+          static_configs:
+            - targets: ["127.0.0.1:8000"]
+
+processors:
+  batch:
+
+exporters:
+  otlp/mac:
+    endpoint: "127.0.0.1:4320"
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 127.0.0.1
+                port: 8890
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/mac]
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [otlp/mac]
